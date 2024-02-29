@@ -17,7 +17,6 @@ func scaling_function(power):
 var color_dict = {
 	"white": Color.WHITE,
 	"red" : Color.RED,
-	"green" : Color.GREEN,
 	"blue" : Color.BLUE
 }
 

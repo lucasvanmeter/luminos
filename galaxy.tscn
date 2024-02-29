@@ -1,12 +1,10 @@
-[gd_scene load_steps=4 format=3 uid="uid://bcjd5khn05mto"]
+[gd_scene load_steps=3 format=3 uid="uid://bcjd5khn05mto"]
 
 [ext_resource type="Script" path="res://galaxy.gd" id="1_k8v70"]
-[ext_resource type="PackedScene" uid="uid://chht14i8wfdd2" path="res://star.tscn" id="2_582c7"]
 [ext_resource type="Texture2D" uid="uid://be6ww7xchck44" path="res://art/spacefield_background.png" id="3_nmca1"]
 
 [node name="Galaxy" type="Node2D"]
 script = ExtResource("1_k8v70")
-star_scene = ExtResource("2_582c7")
 
 [node name="Background" type="TextureRect" parent="."]
 show_behind_parent = true

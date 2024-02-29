@@ -1,15 +1,12 @@
 extends Node2D
 
-@export var star_scene: PackedScene
+signal star_clicked(who)
 
-var star_selected = false
-var source
-var target
+var star_scene = preload("res://star.tscn")
 
 var color_dict = {
 	"white": Color.WHITE,
 	"red" : Color.RED,
-	"green" : Color.GREEN,
 	"blue" : Color.BLUE
 }
 
@@ -66,9 +63,21 @@ func new_star(pos, power, color, parent):
 func make_star_graph(pos_graph):
 	var dict = {}
 	var points = []
-	for loc in pos_graph[0]:
-		var rand_color = color_dict.keys().pick_random()
-		var star = new_star(loc, 10, rand_color, null)
+	for n in len(pos_graph[0]):
+		var loc = pos_graph[0][n]
+		var color
+		var power
+		if n <= 7:
+			color = "blue"
+			power = 10
+		elif n <= 14:
+			color = "red"
+			power = 10
+		else:
+			color = "white"
+			power = 5
+		#var rand_color = color_dict.keys().pick_random()
+		var star = new_star(loc, power, color, null)
 		dict[loc] = star
 		points.append(star)
 	var edges = []
@@ -85,9 +94,9 @@ func make_neighbor_dict(graph):
 		dict[edge[1]].append(edge[0])
 	return dict
 	
-@onready var position_graph = make_position_graph(800, 800)
-@onready var star_graph = make_star_graph(position_graph)
-@onready var neighbor_dict = make_neighbor_dict(star_graph)
+var position_graph = make_position_graph(800, 800)
+var star_graph = make_star_graph(position_graph)
+var neighbor_dict = make_neighbor_dict(star_graph)
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -110,28 +119,11 @@ func launch_star(source,target):
 	
 	source.update_power(0)
 	
-	star_selected = false
 	source.hide_selected()
 
-func is_neighbor(source, target):
-	if neighbor_dict[source].has(target):
-		return true
-	else:
-		return false
-
 func _on_star_clicked(who):
-	if star_selected == false and who.position == who.target:
-		star_selected = true
-		who.show_selected()
-		source = who
-	elif star_selected == true:
-		if who == source:
-			star_selected = false
-			who.hide_selected()
-		else:
-			target = who
-			if is_neighbor(source, target):
-				launch_star(source, target)
+	star_clicked.emit(who)
+
 			
 			
 			

@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://dko8n0s3pt6u"]
+[gd_scene load_steps=4 format=3 uid="uid://dko8n0s3pt6u"]
 
 [ext_resource type="Script" path="res://main.gd" id="1_8aal3"]
 [ext_resource type="PackedScene" uid="uid://bcjd5khn05mto" path="res://galaxy.tscn" id="2_d3y1r"]
+[ext_resource type="PackedScene" uid="uid://ga6oeclmr4rt" path="res://ai.tscn" id="3_rqwu0"]
 
 [node name="Main" type="Node"]
 script = ExtResource("1_8aal3")
@@ -9,3 +10,10 @@ script = ExtResource("1_8aal3")
 [node name="Galaxy" parent="." instance=ExtResource("2_d3y1r")]
 
 [node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="AI" parent="." instance=ExtResource("3_rqwu0")]
+
+[node name="AITimer" type="Timer" parent="."]
+
+[connection signal="star_clicked" from="Galaxy" to="." method="_on_galaxy_star_clicked"]
+[connection signal="timeout" from="AITimer" to="." method="_on_ai_timer_timeout"]
