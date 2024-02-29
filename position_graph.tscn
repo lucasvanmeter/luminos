@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bmu4d0tihjj88"]
+
+[ext_resource type="Script" path="res://position_graph.gd" id="1_aqtjs"]
+
+[node name="PositionGraph" type="Node"]
+script = ExtResource("1_aqtjs")

@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://dko8n0s3pt6u"]
+
+[ext_resource type="Script" path="res://main.gd" id="1_8aal3"]
+[ext_resource type="PackedScene" uid="uid://bcjd5khn05mto" path="res://galaxy.tscn" id="2_d3y1r"]
+
+[node name="Main" type="Node"]
+script = ExtResource("1_8aal3")
+
+[node name="Galaxy" parent="." instance=ExtResource("2_d3y1r")]
+
+[node name="HUD" type="CanvasLayer" parent="."]

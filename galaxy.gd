@@ -1,7 +1,6 @@
 extends Node2D
 
 @export var star_scene: PackedScene
-@export var number_of_stars = 5
 
 var star_selected = false
 var source
@@ -9,30 +8,34 @@ var target
 
 var color_dict = {
 	"white": Color.WHITE,
-	"black": Color.BLACK,
 	"red" : Color.RED,
 	"green" : Color.GREEN,
 	"blue" : Color.BLUE
 }
 
-const size = 800
-const min_distance = 100
+# Code for generating position graph
+var width = 800
+var height = 800
+var min_distance = 100
 var number_of_points = 20
 
-func gen_points():
-	var points = []
-	for i in number_of_points:
-		points.append(rand_coords(points))
-	return points
-		
-func rand_coords(points):
-	var x = randf() * size + 100
-	var y = randf() * size + 100
+func rand_coords(height, width, points, attempts):
+	if attempts == 0:
+		print("Error, could not gen random points.")
+		return false
+	var x = randf() * width + 100
+	var y = randf() * height + 100
 	var pos = Vector2(x,y)
 	if is_valid_coords(pos, points):
 		return pos
 	else:
-		return rand_coords(points)
+		return rand_coords(height, width, points, attempts-1)
+		
+func gen_points(height, width):
+	var points = []
+	for i in number_of_points:
+		points.append(rand_coords(height, width, points, 20))
+	return points
 		
 func is_valid_coords(pos, points):
 	for p in points:
@@ -40,8 +43,8 @@ func is_valid_coords(pos, points):
 			return false
 	return true
 	
-func make_graph():
-	var points = gen_points()
+func make_position_graph(height, width):
+	var points = gen_points(height, width)
 	var delaunay_points = Geometry2D.triangulate_delaunay(points)
 	var edges = []
 	for triangle_index in len(delaunay_points) / 3:
@@ -51,8 +54,28 @@ func make_graph():
 			edges.append([points[i],points[j]])
 	return [points, edges]
 
-var graph = make_graph()
-
+func new_star(pos, power, color, parent):
+	var star = star_scene.instantiate()
+	star.position = pos
+	star.power = power
+	star.color = color
+	star.clicked.connect(_on_star_clicked)
+	star.parent = parent
+	return star
+	
+func make_star_graph(pos_graph):
+	var dict = {}
+	var points = []
+	for loc in pos_graph[0]:
+		var rand_color = color_dict.keys().pick_random()
+		var star = new_star(loc, 10, rand_color, null)
+		dict[loc] = star
+		points.append(star)
+	var edges = []
+	for edge in pos_graph[1]:
+		edges.append([dict[edge[0]], dict[edge[1]]])
+	return [points, edges]
+	
 func make_neighbor_dict(graph):
 	var dict = {}
 	for p in graph[0]:
@@ -62,40 +85,36 @@ func make_neighbor_dict(graph):
 		dict[edge[1]].append(edge[0])
 	return dict
 	
-var neighbor_dict = make_neighbor_dict(graph)
+@onready var position_graph = make_position_graph(800, 800)
+@onready var star_graph = make_star_graph(position_graph)
+@onready var neighbor_dict = make_neighbor_dict(star_graph)
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	for p in graph[0]:
-		var rand_color = color_dict.keys().pick_random()
-		make_star(p, 10, rand_color, null)
+	for star in star_graph[0]:
+		add_child(star)
 		
 func _draw():
-	for edge in graph[1]:
-		draw_line(edge[0], edge[1], Color.WHITE, 2.0)
+	for edge in position_graph[1]:
+		draw_line(edge[0], edge[1], Color.WHITE, 1.0)
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	pass
-
-func make_star(pos, power, color, parent):
-	var star = star_scene.instantiate()
-	star.position = pos
-	star.power = power
-	star.color = color
-	star.clicked.connect(_on_star_clicked)
-	star.parent = parent
-	add_child(star)
-
+	
 func launch_star(source,target):
-	source.set_target(target.position)
-	source.stop_growth()
+	var new_star = new_star(source.position, source.power, source.color, source)
+	add_child(new_star)
+	new_star.target = (target.position)
+	new_star.stop_growth()
+	
+	source.update_power(0)
+	
 	star_selected = false
 	source.hide_selected()
-	make_star(source.position, 0, source.color, source)
 
-func is_valid_target(source, target):
-	if neighbor_dict[source.position].has(target.position):
+func is_neighbor(source, target):
+	if neighbor_dict[source].has(target):
 		return true
 	else:
 		return false
@@ -111,7 +130,7 @@ func _on_star_clicked(who):
 			who.hide_selected()
 		else:
 			target = who
-			if is_valid_target(source, target):
+			if is_neighbor(source, target):
 				launch_star(source, target)
 			
 			

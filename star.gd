@@ -16,7 +16,6 @@ func scaling_function(power):
 
 var color_dict = {
 	"white": Color.WHITE,
-	"black": Color.BLACK,
 	"red" : Color.RED,
 	"green" : Color.GREEN,
 	"blue" : Color.BLUE
@@ -47,8 +46,9 @@ func _on_star_timer_timeout():
 func update_label(text):
 	$Label.text = text
 	
-func update_color(color):
-	$Sprite2D.modulate = color
+func update_color(new_color):
+	color = new_color
+	$Sprite2D.modulate = new_color
 
 func show_selected():
 	$SelectionSprite.visible = true
@@ -59,9 +59,6 @@ func hide_selected():
 func stop_growth():
 	$StarTimer.stop()
 	
-func set_target(pos):
-	target = pos
-	
 func update_power(new_power):
 	power = new_power
 	var tween = get_tree().create_tween()
@@ -69,10 +66,6 @@ func update_power(new_power):
 	$Label.text = str(power)
 
 func _on_area_entered(area):
-	print(self)
-	print(area)
-	print(self.parent)
-	print(area.parent)
 	if area.parent == self or self.parent == area:
 		pass
 	elif position != target and area.position != area.target:
@@ -89,14 +82,7 @@ func _on_area_entered(area):
 			if power <= area.power:
 				call_deferred("queue_free")
 	elif position != target and area.position == area.target:
-		if color == area.color:
-			call_deferred("queue_free")
-		elif color != area.color:
-			if power > area.power:
-				call_deferred("update_power", power - area.power)
-				$StarTimer.start()
-			if power <= area.power:
-				call_deferred("queue_free")
+		call_deferred("queue_free")
 	elif position == target and area.position != area.target:
 		if color == area.color:
 			call_deferred("update_power", power + area.power)
@@ -104,7 +90,8 @@ func _on_area_entered(area):
 			if power >= area.power:
 				call_deferred("update_power", power - area.power)
 			if power < area.power:
-				call_deferred("queue_free")
+				call_deferred("update_power", area.power - power)
+				call_deferred("update_color", area.color)
 
 func _on_control_gui_input(event):
 	if event.is_action_pressed("mouse_click"):
